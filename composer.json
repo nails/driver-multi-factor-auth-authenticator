@@ -5,7 +5,7 @@
     "prefer-stable": true,
     "require": {
         "php": ">=8.3",
-        "nails/module-multi-factor-auth": "dev-feature/pre-new-admin",
+        "nails/module-multi-factor-auth": "dev-develop",
         "sonata-project/google-authenticator": "~2.3.0",
         "bacon/bacon-qr-code": "^3.0"
     },
