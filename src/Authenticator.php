@@ -45,6 +45,13 @@ class Authenticator extends Base implements Driver
 
     // --------------------------------------------------------------------------
 
+    public function isEnabled(): bool
+    {
+        return true;
+    }
+
+    // --------------------------------------------------------------------------
+
     public function preForm(Token $oToken, UserFeedback $oUserFeedback): void
     {
         $oUserFeedback->success(
