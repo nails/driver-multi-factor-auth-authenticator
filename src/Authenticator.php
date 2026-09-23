@@ -19,8 +19,9 @@ use Nails\MFA\Interfaces\Authentication\Driver;
 use Nails\MFA\Resource\Token;
 use Nails\MFA\Resource\UserMethod;
 use Nails\MFA\Service\MultiFactorAuth;
-use Sonata\GoogleAuthenticator\GoogleAuthenticator;
+use OTPHP\TOTP;
 use stdClass;
+use Throwable;
 
 class Authenticator extends Base implements Driver
 {
@@ -125,8 +126,7 @@ class Authenticator extends Base implements Driver
     public function setupStart(User $oUser): stdClass
     {
         //  RFC 4226 recommends a 160-bit shared secret
-        $oGoogle = new GoogleAuthenticator(6, 20);
-        $sSecret = $oGoogle->generateSecret();
+        $sSecret = TOTP::generate(secretSize: 20)->getSecret();
         $sUri    = $this->otpAuthUri($oUser, $sSecret);
 
         return (object) [
@@ -169,16 +169,23 @@ class Authenticator extends Base implements Driver
             return null;
         }
 
-        $oGoogle = new GoogleAuthenticator();
-        $iNow    = $iNow ?? time();
-        $iSlice  = (int) floor($iNow / 30);
+        try {
+            $oTotp  = TOTP::createFromSecret($sSecret);
+            $iNow   = $iNow ?? time();
+            $iSlice = (int) floor($iNow / 30);
 
-        for ($i = -$iWindow; $i <= $iWindow; $i++) {
-            $iPeriod = $iSlice + $i;
-            $oTime   = new \DateTimeImmutable('@' . ($iPeriod * 30));
-            if (hash_equals($oGoogle->getCode($sSecret, $oTime), $sCode)) {
-                return $iPeriod;
+            for ($i = -$iWindow; $i <= $iWindow; $i++) {
+                $iPeriod    = $iSlice + $i;
+                $iTimestamp = $iPeriod * 30;
+                if ($iTimestamp < 0) {
+                    continue;
+                }
+                if (hash_equals($oTotp->at($iTimestamp), $sCode)) {
+                    return $iPeriod;
+                }
             }
+        } catch (Throwable) {
+            return null;
         }
 
         return null;
