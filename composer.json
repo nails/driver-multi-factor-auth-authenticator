@@ -6,7 +6,7 @@
     "require": {
         "php": ">=8.3",
         "nails/module-multi-factor-auth": "dev-feature/pre-new-admin",
-        "sonata-project/google-authenticator": "~2.3.0",
+        "spomky-labs/otphp": "^11.5",
         "bacon/bacon-qr-code": "^3.0"
     },
     "require-dev": {
