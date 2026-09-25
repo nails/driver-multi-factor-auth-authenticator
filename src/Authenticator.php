@@ -13,6 +13,7 @@ use Nails\Config;
 use Nails\Factory;
 use Nails\MFA\Constants;
 use Nails\MFA\Driver\Authentication\Authenticator\Settings\Settings;
+use Nails\MFA\Driver\Authentication\Authenticator\SystemClock;
 use Nails\MFA\Exception\InvalidCodeException;
 use Nails\MFA\Exception\MfaException;
 use Nails\MFA\Interfaces\Authentication\Driver;
@@ -126,7 +127,7 @@ class Authenticator extends Base implements Driver
     public function setupStart(User $oUser): stdClass
     {
         //  RFC 4226 recommends a 160-bit shared secret
-        $sSecret = TOTP::generate(secretSize: 20)->getSecret();
+        $sSecret = TOTP::generate(clock: new SystemClock(), secretSize: 20)->getSecret();
         $sUri    = $this->otpAuthUri($oUser, $sSecret);
 
         return (object) [
@@ -170,7 +171,7 @@ class Authenticator extends Base implements Driver
         }
 
         try {
-            $oTotp  = TOTP::createFromSecret($sSecret);
+            $oTotp  = TOTP::createFromSecret($sSecret, new SystemClock());
             $iNow   = $iNow ?? time();
             $iSlice = (int) floor($iNow / 30);
 
