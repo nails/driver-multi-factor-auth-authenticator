@@ -4,6 +4,7 @@ namespace Nails\MFA\Driver\Authentication\Tests;
 
 use Nails\Auth\Resource\User;
 use Nails\MFA\Driver\Authentication\Authenticator;
+use Nails\MFA\Driver\Authentication\Authenticator\SystemClock;
 use OTPHP\TOTP;
 use PHPUnit\Framework\TestCase;
 
@@ -19,10 +20,10 @@ final class AuthenticatorTotpTest extends TestCase
 
     public function testMatchingPeriodAcceptsCurrentCode(): void
     {
-        $sSecret = TOTP::generate(secretSize: 20)->getSecret();
+        $sSecret = TOTP::generate(clock: new SystemClock(), secretSize: 20)->getSecret();
         $iNow    = 1_700_000_000;
         $iSlice  = (int) floor($iNow / 30);
-        $sCode   = TOTP::createFromSecret($sSecret)->at($iNow);
+        $sCode   = TOTP::createFromSecret($sSecret, new SystemClock())->at($iNow);
 
         self::assertSame(
             $iSlice,
@@ -32,7 +33,7 @@ final class AuthenticatorTotpTest extends TestCase
 
     public function testMatchingPeriodRejectsWrongCode(): void
     {
-        $sSecret = TOTP::generate(secretSize: 20)->getSecret();
+        $sSecret = TOTP::generate(clock: new SystemClock(), secretSize: 20)->getSecret();
 
         self::assertNull(
             Authenticator::matchingPeriod($sSecret, '000000', 1, 1_700_000_000)
@@ -41,10 +42,10 @@ final class AuthenticatorTotpTest extends TestCase
 
     public function testMatchingPeriodIgnoresFormatting(): void
     {
-        $sSecret = TOTP::generate(secretSize: 20)->getSecret();
+        $sSecret = TOTP::generate(clock: new SystemClock(), secretSize: 20)->getSecret();
         $iNow    = 1_700_000_030;
         $iSlice  = (int) floor($iNow / 30);
-        $sCode   = TOTP::createFromSecret($sSecret)->at($iNow);
+        $sCode   = TOTP::createFromSecret($sSecret, new SystemClock())->at($iNow);
 
         self::assertSame(
             $iSlice,
