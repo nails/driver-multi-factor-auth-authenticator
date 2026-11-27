@@ -2,6 +2,7 @@
 
 namespace Nails\MFA\Driver\Authentication\Authenticator\Settings;
 
+use Nails\MFA\Driver\Authentication\Authenticator\Admin\Permission;
 use Nails\Common\Interfaces;
 use Nails\Components\Setting;
 use Nails\Factory;
@@ -21,9 +22,12 @@ class Settings implements Interfaces\Component\Settings
 
     // --------------------------------------------------------------------------
 
-    public function getPermissions(): array
+    /**
+     * @inheritDoc
+     */
+    public function getPermission(): string
     {
-        return [];
+        return Permission\Settings\Settings::class;
     }
 
     // --------------------------------------------------------------------------
